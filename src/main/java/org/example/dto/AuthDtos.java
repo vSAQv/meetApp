@@ -28,7 +28,30 @@ public final class AuthDtos {
     }
 
     public record AuthResponse(
-            String accessToken
+            String accessToken,
+            boolean emailVerified,
+            String emailVerificationToken
+    ) {
+    }
+
+    public record VerifyEmailRequest(
+            @NotBlank String token
+    ) {
+    }
+
+    public record RequestPasswordResetRequest(
+            @NotBlank @Email String email
+    ) {
+    }
+
+    public record PasswordResetResponse(
+            @NotBlank String resetToken
+    ) {
+    }
+
+    public record ResetPasswordRequest(
+            @NotBlank String token,
+            @NotBlank @Size(min = 6, max = 100) String newPassword
     ) {
     }
 }

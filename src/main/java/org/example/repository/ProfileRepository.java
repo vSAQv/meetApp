@@ -9,6 +9,8 @@ public interface ProfileRepository extends JpaRepository<Profile, Long> {
 
     List<Profile> findByOwnerAndActiveTrue(UserAccount owner);
 
+    boolean existsByOwnerAndActiveTrue(UserAccount owner);
+
     List<Profile> findByActiveTrue();
 }
 

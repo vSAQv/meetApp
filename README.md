@@ -51,25 +51,25 @@
 
 ```mermaid
 flowchart LR
-  client[Client (Web/Mobile)] -->|REST| gateway[API Gateway / входной слой]
-  client -->|WebSocket STOMP| ws[WebSocket entry (/ws)]
+  client["Client (Web/Mobile)"] --> gateway["API entry"]
+  client --> ws["WebSocket endpoint"]
 
-  gateway --> auth[Auth Module/Service]
-  gateway --> profiles[Profiles Module/Service]
-  gateway --> matching[Matching Module/Service]
-  gateway --> messages[Messaging Module/Service]
-  gateway --> media[Media Module/Service]
+  gateway --> auth["Auth service"]
+  gateway --> profiles["Profiles service"]
+  gateway --> matching["Matching service"]
+  gateway --> messages["Messaging service"]
+  gateway --> media["Media service"]
 
-  auth --> users[(PostgreSQL: Users)]
-  profiles --> prof[(PostgreSQL: Profiles)]
-  matching --> matchdb[(PostgreSQL: Swipes/Matches)]
-  messages --> msgdb[(PostgreSQL: Messages)]
-  media --> storage[(Object Storage: photos)]
+  auth --> users((Users DB))
+  profiles --> prof((Profiles DB))
+  matching --> matchdb((Swipes+Matches DB))
+  messages --> msgdb((Messages DB))
+  media --> storage((Photos storage))
 
-  matching --> cache[Redis Cache]
+  matching --> cache((Redis cache))
   profiles --> cache
 
-  messages --> broker[(Message Broker)]
+  messages --> broker((Message broker))
 ```
 
 **Описание схемы:** 

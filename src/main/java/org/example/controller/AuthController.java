@@ -5,6 +5,10 @@ import jakarta.validation.Valid;
 import org.example.dto.AuthDtos.AuthResponse;
 import org.example.dto.AuthDtos.LoginRequest;
 import org.example.dto.AuthDtos.RegisterRequest;
+import org.example.dto.AuthDtos.PasswordResetResponse;
+import org.example.dto.AuthDtos.ResetPasswordRequest;
+import org.example.dto.AuthDtos.RequestPasswordResetRequest;
+import org.example.dto.AuthDtos.VerifyEmailRequest;
 import org.example.service.AuthService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -34,6 +38,26 @@ public class AuthController {
     public ResponseEntity<AuthResponse> login(@RequestBody @Valid LoginRequest request) {
         AuthResponse response = authService.login(request);
         return ResponseEntity.ok(response);
+    }
+
+    @PostMapping("/verify-email")
+    public ResponseEntity<AuthResponse> verifyEmail(@RequestBody @Valid VerifyEmailRequest request) {
+        AuthResponse response = authService.verifyEmail(request);
+        return ResponseEntity.ok(response);
+    }
+
+    @PostMapping("/request-password-reset")
+    public ResponseEntity<PasswordResetResponse> requestPasswordReset(
+            @RequestBody @Valid RequestPasswordResetRequest request
+    ) {
+        PasswordResetResponse response = authService.requestPasswordReset(request);
+        return ResponseEntity.ok(response);
+    }
+
+    @PostMapping("/reset-password")
+    public ResponseEntity<Void> resetPassword(@RequestBody @Valid ResetPasswordRequest request) {
+        authService.resetPassword(request);
+        return ResponseEntity.noContent().build();
     }
 }
 
