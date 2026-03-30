@@ -4,10 +4,12 @@ import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
 import java.security.Key;
+import java.nio.charset.StandardCharsets;
 import java.time.Instant;
 import java.util.Date;
 import java.util.Set;
-import javax.crypto.spec.SecretKeySpec;
+import javax.crypto.SecretKey;
+import io.jsonwebtoken.security.Keys;
 import org.springframework.stereotype.Component;
 
 @Component
@@ -62,8 +64,11 @@ public class JwtTokenProvider {
     }
 
     private Key signingKey() {
-        byte[] keyBytes = properties.getSecret().getBytes();
-        return new SecretKeySpec(keyBytes, SignatureAlgorithm.HS256.getJcaName());
+        // HS256 требует ключ длиной >= 256 бит. Keys.hmacShaKeyFor гарантирует корректную длину.
+        // Секрет хранится в `app.jwt.secret`.
+        byte[] keyBytes = properties.getSecret().getBytes(StandardCharsets.UTF_8);
+        SecretKey key = Keys.hmacShaKeyFor(keyBytes);
+        return key;
     }
 }
 

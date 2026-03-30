@@ -8,5 +8,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
 public interface ProfilePhotoRepository extends JpaRepository<ProfilePhoto, Long> {
 
     List<ProfilePhoto> findByProfile(Profile profile);
+
+    java.util.Optional<ProfilePhoto> findFirstByProfileAndMainPhotoTrue(Profile profile);
 }
 

@@ -1,12 +1,16 @@
 package org.example.service;
 
 import java.util.List;
+import java.util.stream.Collectors;
 import org.example.dto.ProfileDtos.CreateOrUpdateProfileRequest;
+import org.example.dto.ProfileDtos.CandidateProfileResponse;
 import org.example.dto.ProfileDtos.ProfileResponse;
 import org.example.exception.EntityNotFoundException;
 import org.example.model.Profile;
+import org.example.model.ProfilePhoto;
 import org.example.model.UserAccount;
 import org.example.repository.ProfileRepository;
+import org.example.repository.ProfilePhotoRepository;
 import org.example.repository.UserAccountRepository;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -16,11 +20,14 @@ public class ProfileService {
 
     private final ProfileRepository profileRepository;
     private final UserAccountRepository userAccountRepository;
+    private final ProfilePhotoRepository profilePhotoRepository;
 
     public ProfileService(ProfileRepository profileRepository,
-                          UserAccountRepository userAccountRepository) {
+                          UserAccountRepository userAccountRepository,
+                          ProfilePhotoRepository profilePhotoRepository) {
         this.profileRepository = profileRepository;
         this.userAccountRepository = userAccountRepository;
+        this.profilePhotoRepository = profilePhotoRepository;
     }
 
     @Transactional
@@ -84,6 +91,36 @@ public class ProfileService {
                 profile.getBio(),
                 profile.getCity(),
                 Boolean.TRUE.equals(profile.getActive())
+        );
+    }
+
+    @Transactional(readOnly = true)
+    public List<CandidateProfileResponse> getRecommendedProfiles(Long ownerId, int limit) {
+        UserAccount owner = userAccountRepository.findById(ownerId)
+                .orElseThrow(() -> new EntityNotFoundException("User not found: " + ownerId));
+
+        // Базовый вариант: берем активные анкеты, исключая свои.
+        // Далее UI сам ограничивает стек нужным количеством (limit).
+        return profileRepository.findByActiveTrue()
+                .stream()
+                .filter(p -> !p.getOwner().getId().equals(owner.getId()))
+                .limit(Math.max(limit, 1))
+                .map(this::toCandidateResponse)
+                .collect(Collectors.toList());
+    }
+
+    private CandidateProfileResponse toCandidateResponse(Profile profile) {
+        ProfilePhoto mainPhoto = profilePhotoRepository
+                .findFirstByProfileAndMainPhotoTrue(profile)
+                .orElse(null);
+
+        String photoUrl = mainPhoto != null ? mainPhoto.getUrl() : null;
+        return new CandidateProfileResponse(
+                profile.getId(),
+                profile.getDisplayName(),
+                profile.getBio(),
+                profile.getCity(),
+                photoUrl
         );
     }
 }

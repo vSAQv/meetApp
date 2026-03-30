@@ -24,7 +24,9 @@ logging:
 
 app:
   jwt:
-    secret: "very-secret-key-change-in-prod"
+    # Для HS256 ключ должен быть >= 256 бит (>= 32 байт).
+    # В проде используйте секрет из переменных окружения/секрет-хранилища.
+    secret: "meetapp-very-secret-key-change-in-prod-please-use-a-longer-secret-value-1234567890"
     access-token-validity-seconds: 3600
   photos:
     upload-dir: "uploads/photos"

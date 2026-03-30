@@ -23,5 +23,15 @@ public final class ProfileDtos {
             boolean active
     ) {
     }
+
+    // Анкета-кандидат для свайпа (минимальный ответ под UI)
+    public record CandidateProfileResponse(
+            Long id,
+            String displayName,
+            String bio,
+            String city,
+            String photoUrl
+    ) {
+    }
 }
 

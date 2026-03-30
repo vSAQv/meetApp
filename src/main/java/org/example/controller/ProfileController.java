@@ -5,6 +5,7 @@ import jakarta.validation.Valid;
 import java.security.Principal;
 import java.util.List;
 import org.example.dto.ProfileDtos.CreateOrUpdateProfileRequest;
+import org.example.dto.ProfileDtos.CandidateProfileResponse;
 import org.example.dto.ProfileDtos.ProfileResponse;
 import org.example.exception.EntityNotFoundException;
 import org.example.model.UserAccount;
@@ -83,6 +84,17 @@ public class ProfileController {
         Long userId = currentUserId(principal);
         profileService.deactivateProfile(userId, id);
         return ResponseEntity.noContent().build();
+    }
+
+    @PreAuthorize("hasRole('USER')")
+    @GetMapping("/recommendations")
+    public ResponseEntity<List<CandidateProfileResponse>> recommendations(
+            Principal principal
+    ) {
+        Long userId = currentUserId(principal);
+        // Для UI достаточно небольшой выборки; при необходимости сделаем пагинацию.
+        List<CandidateProfileResponse> list = profileService.getRecommendedProfiles(userId, 20);
+        return ResponseEntity.ok(list);
     }
 }
 

@@ -108,10 +108,14 @@ public class GlobalExceptionHandler {
             Exception ex,
             HttpServletRequest request
     ) {
+        String exMessage = ex.getMessage();
+        if (exMessage == null || exMessage.isBlank()) {
+            exMessage = "Внутренняя ошибка сервера";
+        }
         ErrorResponse body = ErrorResponse.of(
                 HttpStatus.INTERNAL_SERVER_ERROR.value(),
                 "Internal Server Error",
-                "Внутренняя ошибка сервера",
+                exMessage,
                 request.getRequestURI()
         );
         return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(body);
