@@ -11,6 +11,7 @@ import org.example.model.UserAccount;
 import org.example.repository.MatchRepository;
 import org.example.repository.MessageRepository;
 import org.example.repository.UserAccountRepository;
+import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -20,13 +21,16 @@ public class MessageService {
     private final MatchRepository matchRepository;
     private final MessageRepository messageRepository;
     private final UserAccountRepository userAccountRepository;
+    private final SimpMessagingTemplate messagingTemplate;
 
     public MessageService(MatchRepository matchRepository,
                           MessageRepository messageRepository,
-                          UserAccountRepository userAccountRepository) {
+                          UserAccountRepository userAccountRepository,
+                          SimpMessagingTemplate messagingTemplate) {
         this.matchRepository = matchRepository;
         this.messageRepository = messageRepository;
         this.userAccountRepository = userAccountRepository;
+        this.messagingTemplate = messagingTemplate;
     }
 
     @Transactional
@@ -47,7 +51,12 @@ public class MessageService {
         message.setContent(request.content());
         Message saved = messageRepository.save(message);
 
-        return toResponse(saved);
+        MessageResponse response = toResponse(saved);
+
+        // Автоматическая рассылка в WebSocket топик
+        messagingTemplate.convertAndSend("/topic/chat." + match.getId(), response);
+
+        return response;
     }
 
     public List<MessageResponse> getMessages(Long userId, Long matchId) {
@@ -78,4 +87,3 @@ public class MessageService {
         );
     }
 }
-

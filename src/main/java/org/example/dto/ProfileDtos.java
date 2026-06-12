@@ -20,13 +20,14 @@ public final class ProfileDtos {
             String displayName,
             String bio,
             String city,
-            boolean active
+            boolean active,
+            String photoUrl
     ) {
     }
 
-    // Анкета-кандидат для свайпа (минимальный ответ под UI)
     public record CandidateProfileResponse(
             Long id,
+            Long userId, // ДОБАВЛЕНО: явный ID аккаунта для свайпа
             String displayName,
             String bio,
             String city,
@@ -34,4 +35,3 @@ public final class ProfileDtos {
     ) {
     }
 }
-

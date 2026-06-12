@@ -12,6 +12,10 @@ import org.example.model.UserAccount;
 import org.example.repository.MatchRepository;
 import org.example.repository.SwipeRepository;
 import org.example.repository.UserAccountRepository;
+import org.example.repository.ProfileRepository;
+import org.example.repository.ProfilePhotoRepository;
+import org.example.model.Profile;
+import org.example.model.ProfilePhoto;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -21,13 +25,19 @@ public class SwipeService {
     private final SwipeRepository swipeRepository;
     private final MatchRepository matchRepository;
     private final UserAccountRepository userAccountRepository;
+    private final ProfileRepository profileRepository;
+    private final ProfilePhotoRepository profilePhotoRepository;
 
     public SwipeService(SwipeRepository swipeRepository,
                         MatchRepository matchRepository,
-                        UserAccountRepository userAccountRepository) {
+                        UserAccountRepository userAccountRepository,
+                        ProfileRepository profileRepository,
+                        ProfilePhotoRepository profilePhotoRepository) {
         this.swipeRepository = swipeRepository;
         this.matchRepository = matchRepository;
         this.userAccountRepository = userAccountRepository;
+        this.profileRepository = profileRepository;
+        this.profilePhotoRepository = profilePhotoRepository;
     }
 
     @Transactional
@@ -59,9 +69,13 @@ public class SwipeService {
     }
 
     private MatchResponse checkAndCreateMatch(UserAccount user1, UserAccount user2) {
-        swipeRepository.findByFromUserAndToUser(user2, user1)
+        boolean mutual = swipeRepository.findByFromUserAndToUser(user2, user1)
                 .filter(sw -> sw.getDirection() == SwipeDirection.LIKE)
-                .orElseThrow(() -> new BadRequestException("No mutual like yet"));
+                .isPresent();
+
+        if (!mutual) {
+            return null;
+        }
 
         Long lowId = Math.min(user1.getId(), user2.getId());
         Long highId = Math.max(user1.getId(), user2.getId());
@@ -77,7 +91,40 @@ public class SwipeService {
                     return matchRepository.save(m);
                 });
 
-        return new MatchResponse(match.getId(), match.getUser1().getId(), match.getUser2().getId());
+        return buildMatchResponse(match, user1);
+    }
+
+    private MatchResponse buildMatchResponse(Match match, UserAccount currentUser) {
+        UserAccount partner = match.getUser1().getId().equals(currentUser.getId()) ? match.getUser2() : match.getUser1();
+
+        String partnerName = "Unknown";
+        String partnerPhotoUrl = null;
+
+        Profile profile = profileRepository.findByOwnerAndActiveTrue(partner)
+                .stream().findFirst().orElse(null);
+
+        if (profile != null) {
+            partnerName = profile.getDisplayName();
+            partnerPhotoUrl = profilePhotoRepository.findByProfile(profile).stream()
+                    .findFirst()
+                    .map(ProfilePhoto::getUrl)
+                    .orElse(null);
+        }
+
+        return new MatchResponse(match.getId(), partner.getId(), partnerName, partnerPhotoUrl);
+    }
+
+    public MatchResponse getMatch(Long userId, Long matchId) {
+        UserAccount user = userAccountRepository.findById(userId)
+                .orElseThrow(() -> new EntityNotFoundException("User not found: " + userId));
+        Match match = matchRepository.findById(matchId)
+                .orElseThrow(() -> new EntityNotFoundException("Match not found: " + matchId));
+
+        if (!match.getUser1().getId().equals(user.getId()) && !match.getUser2().getId().equals(user.getId())) {
+            throw new BadRequestException("User is not part of this match");
+        }
+
+        return buildMatchResponse(match, user);
     }
 
     public List<MatchResponse> getMyMatches(Long userId) {
@@ -85,7 +132,7 @@ public class SwipeService {
                 .orElseThrow(() -> new EntityNotFoundException("User not found: " + userId));
         return matchRepository.findByUser1OrUser2(user, user)
                 .stream()
-                .map(m -> new MatchResponse(m.getId(), m.getUser1().getId(), m.getUser2().getId()))
+                .map(m -> buildMatchResponse(m, user))
                 .toList();
     }
 }

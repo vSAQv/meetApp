@@ -15,8 +15,9 @@ public final class SwipeDtos {
 
     public record MatchResponse(
             Long id,
-            Long user1Id,
-            Long user2Id
+            Long partnerId,
+            String partnerName,
+            String partnerPhotoUrl
     ) {
     }
 }
