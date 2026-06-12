@@ -29,11 +29,26 @@ public class SecurityConfig {
                 .csrf(csrf -> csrf.disable())
                 .sessionManagement(sm -> sm.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers(
+                  .requestMatchers(
                                 "/api/auth/**",
                                 "/v3/api-docs/**",
                                 "/swagger-ui/**",
-                                "/swagger-ui.html"
+                                "/swagger-ui.html",
+                                "/photos/**",
+                                "/ws/**",
+                                "/",
+                                "/index.html",
+                                "/assets/**",
+                                "/*.svg",
+                                "/*.png",
+                                "/*.ico",
+                                "/login",
+                                "/register",
+                                "/verify",
+                                "/swipe",
+                                "/matches",
+                                "/profile",
+                                "/chat/**"
                         ).permitAll()
                         .anyRequest().authenticated()
                 )
@@ -52,4 +67,3 @@ public class SecurityConfig {
         return configuration.getAuthenticationManager();
     }
 }
-

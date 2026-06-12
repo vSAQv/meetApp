@@ -37,3 +37,11 @@ build/
 
 ### Mac OS ###
 .DS_Store
+# Custom Ignores
+frontend/node_modules/
+frontend/dist/
+frontend/tsconfig.tsbuildinfo
+uploads/
+project_dump.txt
+.specstory/
+.cursorindexingignore

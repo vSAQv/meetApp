@@ -1,4 +1,8 @@
 spring:
+  servlet:
+    multipart:
+      max-file-size: 10MB
+      max-request-size: 10MB
   application:
     name: meet-app
   datasource:
@@ -15,7 +19,7 @@ spring:
     show-sql: true
 
 server:
-  port: 8080
+  port: 9090
 
 logging:
   level:
@@ -24,8 +28,6 @@ logging:
 
 app:
   jwt:
-    # Для HS256 ключ должен быть >= 256 бит (>= 32 байт).
-    # В проде используйте секрет из переменных окружения/секрет-хранилища.
     secret: "meetapp-very-secret-key-change-in-prod-please-use-a-longer-secret-value-1234567890"
     access-token-validity-seconds: 3600
   photos:
