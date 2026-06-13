@@ -18,6 +18,7 @@ export default function SwipeCard({
   const ref = useRef<HTMLDivElement | null>(null)
   const [dragX, setDragX] = useState(0)
   const [dragging, setDragging] = useState(false)
+  const [swiped, setSwiped] = useState(false)
   const pointerStartX = useRef(0)
 
   const threshold = 120
@@ -35,21 +36,23 @@ export default function SwipeCard({
   }
 
   const triggerLike = () => {
+    setSwiped(true)
     setDragging(false)
-    setDragX(threshold + 40)
-    if (ref.current) ref.current.style.transition = 'transform 200ms ease'
-    setTimeout(() => onLike(), 140)
+    setDragX(window.innerWidth + 200)
+    if (ref.current) ref.current.style.transition = 'transform 300ms ease'
+    setTimeout(() => onLike(), 250)
   }
 
   const triggerDislike = () => {
+    setSwiped(true)
     setDragging(false)
-    setDragX(-(threshold + 40))
-    if (ref.current) ref.current.style.transition = 'transform 200ms ease'
-    setTimeout(() => onDislike(), 140)
+    setDragX(-(window.innerWidth + 200))
+    if (ref.current) ref.current.style.transition = 'transform 300ms ease'
+    setTimeout(() => onDislike(), 250)
   }
 
   const onPointerDown = (e: React.PointerEvent) => {
-    if (!ref.current) return
+    if (swiped || !ref.current) return
     ref.current.style.transition = 'none'
     pointerStartX.current = e.clientX
     setDragging(true)

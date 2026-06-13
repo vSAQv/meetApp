@@ -5,10 +5,14 @@ import { useAuth } from '../state/AuthContext'
 import { CandidateProfileResponse, getRecommendations } from '../api/profile'
 import { swipe } from '../api/swipes'
 import SwipeCard from '../components/SwipeCard'
+import BottomNav from '../components/BottomNav'
+import TopBar from '../components/TopBar'
+import { useLocale } from '../i18n'
 
 export default function SwipePage() {
   const { token } = useAuth()
   const navigate = useNavigate()
+  const { t } = useLocale()
 
   const [stack, setStack] = useState<CandidateProfileResponse[]>([])
   const [loading, setLoading] = useState(true)
@@ -27,14 +31,14 @@ export default function SwipePage() {
     setError(null)
     try {
       const list = await getRecommendations(token, 20)
-      const filtered = list.filter((p) => !swipedIds.current.has(p.id))
+      // Фильтруем по userId, так как свайпаем мы именно юзеров
+      const filtered = list.filter((p) => !swipedIds.current.has(p.userId))
       setStack((prev) => {
         const merged = [...prev, ...filtered]
-        // защита от дублей на клиенте
         const seen = new Set<number>()
         return merged.filter((p) => {
-          if (seen.has(p.id)) return false
-          seen.add(p.id)
+          if (seen.has(p.userId)) return false
+          seen.add(p.userId)
           return true
         })
       })
@@ -69,7 +73,8 @@ export default function SwipePage() {
     if (busy) return
     setBusy(true)
 
-    const targetId = top.id
+    // Используем правильный ID аккаунта
+    const targetId = top.userId
     swipedIds.current.add(targetId)
 
     try {
@@ -77,12 +82,10 @@ export default function SwipePage() {
       setStack((prev) => prev.slice(1))
 
       if (match) {
-        // При матче сразу открываем чат.
         navigate(`/chat/${match.id}`)
       }
     } catch (e: any) {
       setError(e?.message || 'Ошибка свайпа')
-      // если ошибка — откатим удаление
     } finally {
       setBusy(false)
     }
@@ -90,19 +93,16 @@ export default function SwipePage() {
 
   return (
     <div className="app">
-      {/* TopBar сверху, чтобы не плодить элементы */}
-      <div className="container" style={{ flex: 1 }}>
-        <div className="topbar">
-          <div className="brand">meet</div>
-          <div className="hint">Свайпни вправо/влево</div>
-        </div>
-
+      <TopBar />
+      <div className="container" style={{ paddingBottom: 100 }}>
         <div className="swipeArea">
           {loading ? <div className="hint">Загрузка...</div> : null}
           {error ? <div className="error" style={{ width: 'min(420px, 92vw)' }}>{error}</div> : null}
           {!loading && !top ? <div className="hint">Нет кандидатов. Попробуй позже.</div> : null}
+
           {top ? (
             <SwipeCard
+              key={top.id} // КРИТИЧЕСКОЕ ИСПРАВЛЕНИЕ: заставляет React перерисовать карточку по центру
               photoUrl={top.photoUrl ? `${apiBase}${top.photoUrl}` : null}
               displayName={top.displayName}
               bio={top.bio}
@@ -112,25 +112,8 @@ export default function SwipePage() {
             />
           ) : null}
         </div>
-
-        {/* Bottom nav */}
-        <div style={{ marginTop: 'auto' }}>
-          <div className="bottomNav">
-            <div className="navPill" role="navigation" aria-label="Navigation">
-              <a className="navItem navItemActive" href="/swipe">
-                Свайп
-              </a>
-              <a className="navItem" href="/matches">
-                Матчи
-              </a>
-              <a className="navItem" href="/profile">
-                Профиль
-              </a>
-            </div>
-          </div>
-        </div>
       </div>
+      <BottomNav />
     </div>
   )
 }
-

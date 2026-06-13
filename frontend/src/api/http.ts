@@ -36,6 +36,10 @@ export async function requestJson<T>(
     throw new Error(msg)
   }
 
+  if (res.status === 204) {
+    return null as any
+  }
+
   return (await res.json()) as T
 }
 

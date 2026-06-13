@@ -1,14 +1,20 @@
 import React, { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { useAuth } from '../state/AuthContext'
+import { getApiBaseUrl } from '../api/http'
 import { getMyMatches, MatchResponse } from '../api/swipes'
 import TopBar from '../components/TopBar'
+import BottomNav from '../components/BottomNav'
+import { useLocale } from '../i18n'
 
 export default function MatchesPage() {
   const { token } = useAuth()
+  const { t } = useLocale()
   const [matches, setMatches] = useState<MatchResponse[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
+
+  const apiBase = getApiBaseUrl()
 
   useEffect(() => {
     if (!token) return
@@ -16,48 +22,46 @@ export default function MatchesPage() {
     setError(null)
     getMyMatches(token)
       .then((list) => setMatches(list))
-      .catch((e: any) => setError(e?.message || 'Ошибка загрузки матчей'))
+      .catch((e: any) => setError(e?.message || t('errorLoadingMatches')))
       .finally(() => setLoading(false))
   }, [token])
 
   return (
     <div className="app">
-      <TopBar showNav />
+      <TopBar />
       <div className="container">
-        <div className="card" style={{ marginTop: 18 }}>
-          <div className="brand" style={{ fontSize: 18, marginBottom: 8 }}>
-            Матчи
+        <div className="card">
+          <div className="brand" style={{ fontSize: 20, marginBottom: 16 }}>
+            {t('myMatches')}
           </div>
 
-          {loading ? <div className="hint">Загрузка...</div> : null}
+          {loading ? <div className="hint">{t('loading')}</div> : null}
           {error ? <div className="error">{error}</div> : null}
 
-          {!loading && matches.length === 0 ? <div className="hint">Пока нет матчей.</div> : null}
+          {!loading && matches.length === 0 ? <div className="hint">{t('noMatches')}</div> : null}
 
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 10, marginTop: 12 }}>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
             {matches.map((m) => (
               <Link
                 key={m.id}
                 to={`/chat/${m.id}`}
-                style={{
-                  textDecoration: 'none',
-                  color: 'inherit',
-                  padding: 12,
-                  borderRadius: 14,
-                  border: '1px solid rgba(255,255,255,0.10)',
-                  background: 'rgba(255,255,255,0.05)'
-                }}
+                className="matchItem"
               >
-                <div style={{ fontWeight: 900, marginBottom: 4 }}>Матч #{m.id}</div>
-                <div className="hint" style={{ marginTop: 0 }}>
-                  Пользователи: {m.user1Id} и {m.user2Id}
+                {m.partnerPhotoUrl ? (
+                  <img src={`${apiBase}${m.partnerPhotoUrl}`} className="matchAvatar" alt="Avatar" />
+                ) : (
+                  <div className="matchAvatar">{m.partnerName.charAt(0).toUpperCase()}</div>
+                )}
+                <div>
+                  <div style={{ fontWeight: 700, fontSize: 17, marginBottom: 2 }}>{m.partnerName}</div>
+                  <div className="hint" style={{ marginTop: 0 }}>{t('openChatHint')}</div>
                 </div>
               </Link>
             ))}
           </div>
         </div>
       </div>
+      <BottomNav />
     </div>
   )
 }
-

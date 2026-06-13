@@ -7,8 +7,9 @@ export type SwipeRequest = {
 
 export type MatchResponse = {
   id: number
-  user1Id: number
-  user2Id: number
+  partnerId: number
+  partnerName: string
+  partnerPhotoUrl: string | null
 }
 
 export async function swipe(token: string, req: SwipeRequest): Promise<MatchResponse | null> {
@@ -17,5 +18,9 @@ export async function swipe(token: string, req: SwipeRequest): Promise<MatchResp
 
 export async function getMyMatches(token: string): Promise<MatchResponse[]> {
   return requestJson('/api/swipes/matches', { method: 'GET', token })
+}
+
+export async function getMatch(token: string, matchId: number): Promise<MatchResponse> {
+  return requestJson(`/api/swipes/matches/${matchId}`, { method: 'GET', token })
 }
 
