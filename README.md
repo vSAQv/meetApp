@@ -303,3 +303,8 @@ sequenceDiagram
 ### Conclusion
 
 The current "As Is" architecture is a highly optimized, fully functional monolithic client-server system. It implements crucial production-grade features: state-of-the-art JWT Security, custom sliding-window Rate Limiting, real-time STOMP messaging, and a bundled single-port static delivery. The existing constraints are typical for monolithic designs, and the codebase has been structured with clear domain boundaries, making it fully prepared for a seamless transition to the "To Be" microservices target architecture.
+
+## Credits & Acknowledgements
+
+*   **Backend Foundation:** This project includes modified backend logic originally developed by [@kirirut](https://github.com/kirirut) under the [Meet App](https://github.com/kirirut/meet_app) repository.
+*   **Frontend & Modern Features:** The React SPA client, TypeScript migration, dynamic rate limiter aspect, WebSocket token interceptors, and production single-port serving pipeline were designed and implemented by [@vSAQv](https://github.com/vSAQv).
