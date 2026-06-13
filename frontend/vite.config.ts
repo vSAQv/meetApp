@@ -6,20 +6,17 @@ export default defineConfig({
   server: {
     port: 5173,
     proxy: {
-      // REST API
       '/api': {
-        target: 'http://localhost:8080',
+        target: 'http://localhost:9090',
         changeOrigin: true,
       },
-      // WebSocket (если позже включим real-time на клиенте)
       '/ws': {
-        target: 'http://localhost:8080',
+        target: 'http://localhost:9090',
         ws: true,
         changeOrigin: true,
       },
-      // Статика для фото
       '/photos': {
-        target: 'http://localhost:8080',
+        target: 'http://localhost:9090',
         changeOrigin: true,
       },
     }
